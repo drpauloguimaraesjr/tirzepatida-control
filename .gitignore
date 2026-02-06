@@ -1,0 +1,28 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Firebase
+firebase-service-account.json
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (if using npm later)
+node_modules/
+npm-debug.log*
+
+# Build
+dist/
+build/
+
+# Local data
+*.log
