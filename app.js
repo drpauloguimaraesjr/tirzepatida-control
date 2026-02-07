@@ -556,12 +556,207 @@ function setupEventListeners() {
     // Consumption period selector
     document.getElementById('consumption-period')?.addEventListener('change', updateConsumptionChart);
     
+    // Patient autocomplete
+    setupPatientAutocomplete();
+    
     // Close modals on backdrop click
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal(modal.id);
         });
     });
+}
+
+// ================================================
+// PATIENT AUTOCOMPLETE
+// ================================================
+let selectedAutocompleteIndex = -1;
+
+function setupPatientAutocomplete() {
+    const searchInput = document.getElementById('app-patient-search');
+    const hiddenInput = document.getElementById('app-patient');
+    const autocompleteList = document.getElementById('patient-autocomplete-list');
+    
+    if (!searchInput || !autocompleteList) return;
+    
+    // Input event for filtering
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        
+        if (query.length < 1) {
+            hideAutocomplete();
+            hiddenInput.value = '';
+            return;
+        }
+        
+        const filteredPatients = filterPatientsByName(query);
+        renderAutocompleteList(filteredPatients, query);
+    });
+    
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', (e) => {
+        const items = autocompleteList.querySelectorAll('.autocomplete-item');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedAutocompleteIndex = Math.min(selectedAutocompleteIndex + 1, items.length - 1);
+            updateAutocompleteSelection(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedAutocompleteIndex = Math.max(selectedAutocompleteIndex - 1, 0);
+            updateAutocompleteSelection(items);
+        } else if (e.key === 'Enter' && selectedAutocompleteIndex >= 0) {
+            e.preventDefault();
+            items[selectedAutocompleteIndex]?.click();
+        } else if (e.key === 'Escape') {
+            hideAutocomplete();
+        }
+    });
+    
+    // Focus event - show list if there's input
+    searchInput.addEventListener('focus', () => {
+        const query = searchInput.value.trim();
+        if (query.length >= 1) {
+            const filteredPatients = filterPatientsByName(query);
+            renderAutocompleteList(filteredPatients, query);
+        }
+    });
+    
+    // Close autocomplete when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !autocompleteList.contains(e.target)) {
+            hideAutocomplete();
+        }
+    });
+}
+
+function filterPatientsByName(query) {
+    const normalizedQuery = normalizeString(query);
+    
+    return state.patients
+        .filter(patient => patient.status === 'active')
+        .filter(patient => {
+            const normalizedName = normalizeString(patient.name);
+            // Check if any part of the name matches
+            return normalizedName.includes(normalizedQuery) ||
+                   fuzzyMatch(normalizedName, normalizedQuery);
+        })
+        .sort((a, b) => {
+            // Sort by best match first
+            const aName = normalizeString(a.name);
+            const bName = normalizeString(b.name);
+            const aStartsWith = aName.startsWith(normalizedQuery);
+            const bStartsWith = bName.startsWith(normalizedQuery);
+            
+            if (aStartsWith && !bStartsWith) return -1;
+            if (!aStartsWith && bStartsWith) return 1;
+            return a.name.localeCompare(b.name);
+        })
+        .slice(0, 8); // Limit to 8 results
+}
+
+function normalizeString(str) {
+    return str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function fuzzyMatch(text, query) {
+    // Simple fuzzy matching - check if all query chars exist in order
+    let queryIndex = 0;
+    for (let i = 0; i < text.length && queryIndex < query.length; i++) {
+        if (text[i] === query[queryIndex]) {
+            queryIndex++;
+        }
+    }
+    return queryIndex === query.length;
+}
+
+function renderAutocompleteList(patients, query) {
+    const autocompleteList = document.getElementById('patient-autocomplete-list');
+    selectedAutocompleteIndex = -1;
+    
+    if (patients.length === 0) {
+        autocompleteList.innerHTML = '<div class="autocomplete-empty">Nenhum paciente encontrado</div>';
+        autocompleteList.classList.remove('hidden');
+        return;
+    }
+    
+    const normalizedQuery = normalizeString(query);
+    
+    autocompleteList.innerHTML = patients.map(patient => {
+        const highlightedName = highlightMatch(patient.name, normalizedQuery);
+        return `
+            <div class="autocomplete-item" data-id="${patient.id}" data-name="${patient.name}" data-dose="${patient.dose}">
+                <span class="autocomplete-item-name">${highlightedName}</span>
+                <span class="autocomplete-item-dose">${patient.dose} mg</span>
+            </div>
+        `;
+    }).join('');
+    
+    // Add click handlers
+    autocompleteList.querySelectorAll('.autocomplete-item').forEach(item => {
+        item.addEventListener('click', () => {
+            selectPatient(item.dataset.id, item.dataset.name, item.dataset.dose);
+        });
+    });
+    
+    autocompleteList.classList.remove('hidden');
+}
+
+function highlightMatch(name, query) {
+    const normalizedName = normalizeString(name);
+    const startIndex = normalizedName.indexOf(query);
+    
+    if (startIndex === -1) return name;
+    
+    const beforeMatch = name.slice(0, startIndex);
+    const match = name.slice(startIndex, startIndex + query.length);
+    const afterMatch = name.slice(startIndex + query.length);
+    
+    return `${beforeMatch}<mark>${match}</mark>${afterMatch}`;
+}
+
+function updateAutocompleteSelection(items) {
+    items.forEach((item, index) => {
+        item.classList.toggle('active', index === selectedAutocompleteIndex);
+    });
+    
+    // Scroll into view
+    if (selectedAutocompleteIndex >= 0 && items[selectedAutocompleteIndex]) {
+        items[selectedAutocompleteIndex].scrollIntoView({ block: 'nearest' });
+    }
+}
+
+function selectPatient(id, name, dose) {
+    const searchInput = document.getElementById('app-patient-search');
+    const hiddenInput = document.getElementById('app-patient');
+    const doseSelect = document.getElementById('app-dose');
+    
+    searchInput.value = name;
+    hiddenInput.value = id;
+    
+    // Auto-fill dose
+    if (doseSelect && dose) {
+        const doseValue = parseFloat(dose).toFixed(1);
+        const option = doseSelect.querySelector(`option[value="${doseValue}"]`);
+        if (option) doseSelect.value = doseValue;
+    }
+    
+    hideAutocomplete();
+    showToast(`Paciente ${name} selecionado`, 'success');
+}
+
+function hideAutocomplete() {
+    const autocompleteList = document.getElementById('patient-autocomplete-list');
+    if (autocompleteList) {
+        autocompleteList.classList.add('hidden');
+        autocompleteList.innerHTML = '';
+    }
+    selectedAutocompleteIndex = -1;
 }
 
 function setDefaultFormValues() {

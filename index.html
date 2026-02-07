@@ -355,7 +355,7 @@
                 <div class="supplier-info">
                   <span class="supplier-name">Carregando...</span>
                 </div>
-              </div>
+              </div> 
             </div>
           </div>
         </section>
@@ -538,7 +538,10 @@
     <div id="application-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Registrar Aplicação</h2>
+          <div class="modal-title-group">
+            <h2>Registrar Aplicação</h2>
+            <span class="modal-subtitle">(Baixa do Estoque)</span>
+          </div>
           <button class="modal-close" onclick="closeModal('application-modal')">
             ×
           </button>
@@ -546,10 +549,19 @@
         <form id="application-form">
           <div class="form-grid">
             <div class="input-group">
-              <label for="app-patient">Paciente</label>
-              <select id="app-patient" required>
-                <option value="">Selecione...</option>
-              </select>
+              <label for="app-patient-search">Paciente</label>
+              <div class="autocomplete-container">
+                <input 
+                  type="text" 
+                  id="app-patient-search" 
+                  class="autocomplete-input"
+                  placeholder="Digite o nome do paciente..."
+                  autocomplete="off"
+                  required
+                />
+                <input type="hidden" id="app-patient" required />
+                <div id="patient-autocomplete-list" class="autocomplete-list hidden"></div>
+              </div>
             </div>
             <div class="input-group">
               <label for="app-dose">Dose (mg)</label>
@@ -565,6 +577,15 @@
               </select>
             </div>
             <div class="input-group">
+              <label for="app-quantity">Quantidade de Doses</label>
+              <select id="app-quantity">
+                <option value="1" selected>1 dose (aplicação na clínica)</option>
+                <option value="2">2 doses (levar para casa)</option>
+                <option value="3">3 doses (levar para casa)</option>
+                <option value="4">4 doses (levar para casa)</option>
+              </select>
+            </div>
+            <div class="input-group">
               <label for="app-date">Data</label>
               <input type="datetime-local" id="app-date" required />
             </div>
@@ -574,6 +595,8 @@
                 <option value="7" selected>7 dias</option>
                 <option value="10">10 dias</option>
                 <option value="14">14 dias</option>
+                <option value="21">21 dias</option>
+                <option value="28">28 dias</option>
               </select>
             </div>
           </div>
@@ -584,6 +607,9 @@
               rows="2"
               placeholder="Opcional..."
             ></textarea>
+          </div>
+          <div id="app-stock-summary" class="stock-summary hidden">
+            <span class="stock-summary-text">Total a descontar: <strong id="app-total-discount">0 mg</strong></span>
           </div>
           <div class="modal-actions">
             <button
