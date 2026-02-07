@@ -390,9 +390,73 @@ async function loadDataFromFirestore() {
             users: state.users.length
         });
         
+        // If database is empty, populate with demo data
+        if (state.patients.length === 0) {
+            console.log('📊 Banco vazio - populando com dados demo...');
+            await populateFirestoreWithDemoData();
+        }
+        
     } catch (error) {
         console.error('❌ Erro ao carregar dados:', error);
         showToast('Erro ao carregar dados do servidor', 'error');
+    }
+}
+
+// Populate Firestore with demo data for presentation
+async function populateFirestoreWithDemoData() {
+    try {
+        showToast('Populando banco com dados de demonstração...', 'info');
+        
+        // Add stock settings
+        await db.collection('settings').doc('stock').set({
+            currentStock: 285.5,
+            maxStock: 500,
+            warningLevel: 100,
+            criticalLevel: 50,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Add patients
+        for (const patient of demoData.patients) {
+            await db.collection('patients').doc(patient.id).set({
+                ...patient,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        // Add suppliers
+        for (const supplier of demoData.suppliers) {
+            await db.collection('suppliers').doc(supplier.id).set({
+                ...supplier,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        // Add demo applications (last 30 days)
+        const demoApps = generateDemoApplications();
+        for (const app of demoApps.slice(0, 50)) { // Limit to 50 for speed
+            await db.collection('applications').add({
+                ...app,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        // Add stock history
+        const demoHistory = generateDemoStockHistory();
+        for (const entry of demoHistory) {
+            await db.collection('stockHistory').add(entry);
+        }
+        
+        console.log('✅ Dados demo populados com sucesso!');
+        showToast('Dados de demonstração carregados!', 'success');
+        
+        // Reload data
+        await loadDataFromFirestore();
+        updateDashboard();
+        
+    } catch (error) {
+        console.error('❌ Erro ao popular dados demo:', error);
+        showToast('Erro ao carregar dados demo', 'error');
     }
 }
 
