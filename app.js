@@ -230,6 +230,14 @@ function initializeApp() {
 function initializeLocalMode() {
     console.log('Running in local mode (no Firebase)');
     
+    // Set owner as default user in demo mode
+    state.user = {
+        email: OWNER_EMAIL,
+        name: 'Dr. Paulo Guimarães Jr',
+        role: 'admin'
+    };
+    console.log('👑 Modo demo - Proprietário configurado como admin');
+    
     // Load from localStorage or use demo data
     const savedData = localStorage.getItem('tirzepatidaData');
     
@@ -261,6 +269,7 @@ function initializeLocalMode() {
     
     // Skip login for demo
     showApp();
+    applyPermissions(); // Apply admin permissions
     updateDashboard();
 }
 
