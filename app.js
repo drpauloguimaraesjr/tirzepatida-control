@@ -22,6 +22,11 @@ const state = {
 };
 
 // ================================================
+// OWNER CONFIG - Email com acesso total ao sistema
+// ================================================
+const OWNER_EMAIL = 'drpauloguimaraesjr@gmail.com';
+
+// ================================================
 // PERMISSIONS CONFIG
 // ================================================
 const PERMISSIONS = {
@@ -290,20 +295,37 @@ function initializeFirebaseMode() {
 // Load user role from Firestore
 async function loadUserRole(uid) {
     try {
+        // Owner email always gets admin role
+        if (state.user.email === OWNER_EMAIL) {
+            state.user.role = 'admin';
+            state.user.name = 'Dr. Paulo Guimarães Jr';
+            console.log('👑 Proprietário identificado - acesso total concedido');
+            
+            // Ensure owner is saved in Firestore with admin role
+            await db.collection('users').doc(uid).set({
+                email: OWNER_EMAIL,
+                name: 'Dr. Paulo Guimarães Jr',
+                role: 'admin',
+                isOwner: true,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+            return;
+        }
+        
         const userDoc = await db.collection('users').doc(uid).get();
         if (userDoc.exists) {
             const userData = userDoc.data();
             state.user.role = userData.role || 'tecnica';
             state.user.name = userData.name || state.user.email;
         } else {
-            // First time user - create with default role
+            // First time user - create with default role (tecnica - lowest permission)
             await db.collection('users').doc(uid).set({
                 email: state.user.email,
                 name: state.user.email.split('@')[0],
-                role: 'admin', // First user is admin
+                role: 'tecnica', // New users get lowest permission
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            state.user.role = 'admin';
+            state.user.role = 'tecnica';
         }
     } catch (error) {
         console.error('Erro ao carregar role:', error);
