@@ -759,6 +759,42 @@ function hideAutocomplete() {
     selectedAutocompleteIndex = -1;
 }
 
+// ================================================
+// COLLAPSIBLE PANELS
+// ================================================
+function toggleCollapsible(panelId) {
+    const panel = document.getElementById(panelId);
+    if (panel) {
+        panel.classList.toggle('collapsed');
+    }
+}
+
+function updateCollapsibleCounts() {
+    // Products count
+    const productsCount = document.getElementById('products-count');
+    if (productsCount) {
+        const products = state.products?.length || demoData.products?.length || 0;
+        const lots = state.lots?.length || demoData.lots?.length || 0;
+        productsCount.textContent = `${products} prod. / ${lots} lotes`;
+    }
+    
+    // Applications count
+    const applicationsCount = document.getElementById('applications-count');
+    if (applicationsCount) {
+        applicationsCount.textContent = state.applications?.length || 0;
+    }
+    
+    // Patients count
+    const patientsCount = document.getElementById('patients-count');
+    if (patientsCount) {
+        const active = state.patients?.filter(p => p.status === 'active').length || 0;
+        patientsCount.textContent = active;
+    }
+}
+
+// Make toggleCollapsible available globally
+window.toggleCollapsible = toggleCollapsible;
+
 function setDefaultFormValues() {
     // Set current date/time for application form
     const now = new Date();
@@ -934,6 +970,7 @@ function updateDashboard() {
     updateLotsTable();
     updatePatientSelect();
     updateSupplierSelect();
+    updateCollapsibleCounts();
 }
 
 function updateStockGauge() {

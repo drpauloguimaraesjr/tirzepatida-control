@@ -1942,3 +1942,196 @@ tbody tr:hover {
   color: var(--text-muted);
   font-weight: 400;
 }
+
+/* ================================================
+   COLLAPSIBLE PANELS
+   ================================================ */
+
+.collapsible-sections {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 1200px) {
+  .collapsible-sections {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .collapsible-sections {
+    grid-template-columns: 1fr;
+  }
+}
+
+.collapsible-card {
+  padding: 0;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.collapsible-header:hover {
+  background: var(--bg-card-hover);
+}
+
+.collapsible-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.collapsible-title svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted);
+}
+
+.collapsible-title h3 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.collapsible-count {
+  font-size: 0.7rem;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+}
+
+.chevron-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  transition: transform var(--transition-normal);
+}
+
+.collapsible-card.collapsed .chevron-icon {
+  transform: rotate(-90deg);
+}
+
+.collapsible-content {
+  max-height: 400px;
+  overflow: hidden;
+  transition: max-height var(--transition-normal), padding var(--transition-normal);
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+}
+
+.collapsible-card.collapsed .collapsible-content {
+  max-height: 0;
+  padding: 0 var(--spacing-lg);
+}
+
+.collapsible-toolbar {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.collapsible-toolbar .search-input {
+  flex: 1;
+  max-width: 200px;
+}
+
+.collapsible-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+/* Compact table container */
+.table-container.compact {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.table-container.compact table {
+  font-size: 0.8rem;
+}
+
+.table-container.compact th,
+.table-container.compact td {
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+/* Button small variant */
+.btn-small {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.75rem;
+}
+
+/* Compact main content - fit in viewport */
+.main-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-height: calc(100vh - 60px);
+}
+
+/* Smaller chart section */
+.charts-section {
+  grid-template-columns: 1.5fr 1fr;
+}
+
+.chart-card {
+  min-height: 280px;
+}
+
+.chart-container {
+  height: 220px;
+}
+
+/* Compact stock overview */
+.stock-overview {
+  gap: var(--spacing-md);
+}
+
+.stock-card.main-stock {
+  padding: var(--spacing-md);
+}
+
+.stock-gauge {
+  width: 100px;
+  height: 100px;
+}
+
+.stock-value span:first-child {
+  font-size: 2rem;
+}
+
+/* Compact actions section */
+.actions-section {
+  gap: var(--spacing-md);
+}
+
+.actions-card, .suppliers-card {
+  padding: var(--spacing-md);
+}
+
+.action-buttons {
+  gap: var(--spacing-xs);
+}
+
+.action-buttons .btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.8rem;
+}
